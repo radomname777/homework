@@ -16,7 +16,6 @@ namespace MyApp
 
         public FileDataSource(){}
 
-
         public  string ReadData()
         {
             return FF.Read();
@@ -34,7 +33,6 @@ namespace MyApp
 
         public DataSourceDecorator(DataSource? source)
         {
-
             Wrappee = source;
         }
 
@@ -50,16 +48,11 @@ namespace MyApp
         private string bytestring { get; set; }
         public override string ReadData()
         {
-            string Data = FF.Read();
-            if (!_isok) return null;
-            char[] ch = bytestring.ToCharArray();
-            Console.WriteLine(Data);
-            var Data2 = Encoding.Default.GetBytes(Data);
-            for (int i = 0; i < Data2.Length; i++)
-                foreach (var item in ch) Data2[i] ^= (byte)item;
+            if (!_isok) return FF.Read();
             _isok = false;
-
-            return Data;
+            WriteData(bytestring);
+            
+            return FF.Read();
         }
 
         public override void WriteData(string? data)
@@ -81,18 +74,13 @@ namespace MyApp
         public CompressionDecorator(DataSource? source) : base(source){  }
         public override string  ReadData()
         {
-
-            FF.DecompressString();
-            return FF.Read();
-
+            if (FF.DecompressString()) return FF.Read();
+            else { Console.WriteLine("Not File"); return null; }
         }
 
-        public override void WriteData(string data)
-        {
-           
-            FF.Write(FF.CompressString(FF.Read()));
+        public override void WriteData(string data) => FF.Write(FF.CompressString(FF.Read()));
         
-        }
+        
     }
     public class Program
     {
@@ -101,9 +89,8 @@ namespace MyApp
 
             DataSource sad = new FileDataSource() ;
             sad = new DataSourceDecorator(sad);
-            sad.WriteData("A");
-            //sad.ReadData();
-          Console.WriteLine(sad.ReadData());
+            sad.WriteData("Niahd");
+            Console.WriteLine(sad.ReadData());
         }
     }
 }
